@@ -1,6 +1,6 @@
 import { MessageQueue, QueueConfig } from '../types/message-queue';
 
-import { Client, connect, MsgCallback, Subscription, Msg, NatsError } from 'ts-nats';
+import { Client, connect, MsgCallback, Subscription, NatsError, Msg } from 'ts-nats';
 
 export class NatsMessageQueue implements MessageQueue {
     subsciptions: Subscription[] = [];
@@ -20,7 +20,7 @@ export class NatsMessageQueue implements MessageQueue {
     }
 
     async consume(topic: string, callbackFn: (err: NatsError | null | Error, message?: any) => void): Promise<any> {
-        const cb: MsgCallback = (err, message) => {
+        const cb: MsgCallback = (err, message: Msg) => {
             try {
                 if (err) {
                     throw err;
