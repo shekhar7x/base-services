@@ -1,6 +1,6 @@
 import { MessageQueue, QueueConfig } from '../types/message-queue';
 
-import { Client, connect, MsgCallback, Subscription } from 'ts-nats';
+import { Client, connect, MsgCallback, Subscription, Msg, NatsError } from 'ts-nats';
 
 export class NatsMessageQueue implements MessageQueue {
     subsciptions: Subscription[] = [];
@@ -19,8 +19,19 @@ export class NatsMessageQueue implements MessageQueue {
         return this.nc;
     }
 
-    async consume(topic: string, callbackFn: MsgCallback): Promise<any> {
-        const sub = await this.nc.subscribe(topic, callbackFn, { queue: this.config.queueGroup });
+    async consume(topic: string, callbackFn: (err: NatsError | null | Error, message?: any) => void): Promise<any> {
+        const cb: MsgCallback = (err, message) => {
+            try {
+                if (err) {
+                    throw err;
+                }
+                const data = JSON.parse(message.data);
+                callbackFn(null, data);
+            } catch (e) {
+                callbackFn(e);
+            }
+        };
+        const sub = await this.nc.subscribe(topic, cb, { queue: this.config.queueGroup });
         this.subsciptions.push(sub);
     }
 
