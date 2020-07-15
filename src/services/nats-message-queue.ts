@@ -12,6 +12,8 @@ export class NatsMessageQueue implements MessageQueue {
     }
 
     async initiate(): Promise<any> {
+        if (this.nc) return this.nc;
+
         this.nc = await connect(this.config.connectionUri);
         this.nc.on('error', (err) => {
             console.log(`[Nats error]`, err);
@@ -20,6 +22,8 @@ export class NatsMessageQueue implements MessageQueue {
     }
 
     async consume(topic: string, callbackFn: (err: NatsError | null | Error, message?: any) => void): Promise<any> {
+        this.nc || (await this.initiate());
+
         const cb: MsgCallback = (err, message: Msg) => {
             try {
                 if (err) {
@@ -36,6 +40,8 @@ export class NatsMessageQueue implements MessageQueue {
     }
 
     async produce(topic: string, message: { [key: string]: any }): Promise<any> {
+        this.nc || (await this.initiate());
+
         this.nc.publish(topic, JSON.stringify(message));
     }
 }
