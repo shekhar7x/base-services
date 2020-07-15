@@ -7,6 +7,6 @@ export interface BiRequestConfig {
 export interface BiRequest {
     config?: BiRequestConfig;
     initiate(): Promise<any>;
-    consume(topic: string, callbackFn: Function);
+    serve(path: string, callbackFn: Function);
     request(path: string, message: { [key: string]: any });
 }
