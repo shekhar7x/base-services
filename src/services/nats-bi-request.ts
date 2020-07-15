@@ -20,28 +20,20 @@ export class NatsBiRequest implements BiRequest {
         return this.nc;
     }
 
-    getHandlerCallBack(handler: Function) {
-        return (payload?: RequestPayload, replyTo?: string): void => {
-            handler(payload)
-                .then((result) => {
-                    this.nc.publish(replyTo, JSON.stringify({ result: result }));
-                })
-                .catch((e) => {
-                    this.nc.publish(replyTo, JSON.stringify({ error: JSON.stringify(e) }));
-                });
-        };
-    }
-
     async serve(path: string, handler: Function): Promise<any> {
         this.nc || (await this.initiate());
-        const handlerCallback = this.getHandlerCallBack(handler);
         const cb: MsgCallback = (err, message: Msg) => {
             try {
                 if (err) throw err;
 
                 const payload: RequestPayload = JSON.parse(message.data);
-
-                handlerCallback(payload, message.reply);
+                handler(payload)
+                    .then((result) => {
+                        this.nc.publish(message.reply, JSON.stringify({ result: result }));
+                    })
+                    .catch((e) => {
+                        this.nc.publish(message.reply, JSON.stringify({ error: JSON.stringify(e) }));
+                    });
             } catch (e) {
                 console.log('[nats:subscription:error]', err);
                 if (message && message.reply) {
