@@ -19,7 +19,12 @@ export class NatsBiRequest implements BiRequest {
         });
         return this.nc;
     }
-
+    registerRoutes(routes = []) {
+        routes = routes.filter((route) => !route.subscriptionPath);
+        routes.forEach((route) => {
+            this.serve(route.subscriptionPath, route.handler).catch((e) => console.log('Nats:serve:error', e));
+        });
+    }
     async serve(path: string, handler: Function): Promise<any> {
         this.nc || (await this.initiate());
         const cb: MsgCallback = (err, message: Msg) => {
