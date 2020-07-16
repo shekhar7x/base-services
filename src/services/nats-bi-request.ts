@@ -32,7 +32,11 @@ export class NatsBiRequest implements BiRequest {
                         this.nc.publish(message.reply, JSON.stringify({ result: result }));
                     })
                     .catch((e) => {
-                        this.nc.publish(message.reply, JSON.stringify({ error: JSON.stringify(e) }));
+                        if (typeof e === 'string') {
+                            e = new Error(e);
+                        }
+                        const { message, statusCode, stack } = e;
+                        this.nc.publish(message.reply, JSON.stringify({ error: { statusCode, message, stack } }));
                     });
             } catch (e) {
                 console.log('[nats:subscription:error]', err);
