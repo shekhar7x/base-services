@@ -20,7 +20,7 @@ export class NatsBiRequest implements BiRequest {
         return this.nc;
     }
     registerRoutes(routes = []) {
-        routes = routes.filter((route) => !route.subscriptionPath);
+        routes = routes.filter((route) => !!route.subscriptionPath);
         routes.forEach((route) => {
             this.serve(route.subscriptionPath, route.handler).catch((e) => console.log('Nats:serve:error', e));
         });
