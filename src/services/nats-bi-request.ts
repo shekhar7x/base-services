@@ -19,10 +19,25 @@ export class NatsBiRequest implements BiRequest {
         });
         return this.nc;
     }
-    registerRoutes(routes = []) {
-        routes = routes.filter((route) => !!route.subscriptionPath);
-        routes.forEach((route) => {
-            this.serve(route.subscriptionPath, route.handler).catch((e) => console.log('Nats:serve:error', e));
+    enhanceConfig(
+        routerConfig: { basePath: string; routes: Array<any>; [x: string]: any },
+        appConfig: { basePath: string; [x: string]: any },
+    ) {
+        const { basePath: routerPath } = routerConfig;
+        const routerName = routerPath.replace(/.*\//g, '');
+        const serviceName = appConfig.basePath.replace(/^\//g, '').replace(/\//g, '.');
+        routerConfig.routes.forEach((route) => {
+            if (!route.subscriptionPath) return;
+
+            route.subscriptionPath = `${serviceName}.${routerName}.${route.subscriptionPath}`;
+        });
+    }
+    registerRoutes(routerConfigs: Array<{ basePath: string; routes: Array<any>; [x: string]: any }>) {
+        routerConfigs.forEach((routerConfig) => {
+            routerConfig.routes.forEach((route) => {
+                if (!route.subscriptionPath) return;
+                this.serve(route.subscriptionPath, route.handler);
+            });
         });
     }
     async serve(path: string, handler: Function): Promise<any> {
