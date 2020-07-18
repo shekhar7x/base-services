@@ -55,8 +55,11 @@ export class NatsBiRequest implements BiRequest {
                         if (typeof e === 'string') {
                             e = new Error(e);
                         }
-                        const { message, statusCode, stack } = e;
-                        this.nc.publish(message.reply, JSON.stringify({ error: { statusCode, message, stack } }));
+                        const { message: errorMessage, statusCode, stack } = e;
+                        this.nc.publish(
+                            message.reply,
+                            JSON.stringify({ error: { statusCode, message: errorMessage, stack } }),
+                        );
                     });
             } catch (e) {
                 console.log('[nats:subscription:error]', err);
