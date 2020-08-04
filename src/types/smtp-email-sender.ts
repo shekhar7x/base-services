@@ -1,6 +1,6 @@
 export interface SmtpEmailSenderConfig {
-    host: string;
-    port: number;
+    host: string | 'smtp.gmail.com';
+    port: number | 587;
     userName: string;
     password: string;
     secure: boolean;
